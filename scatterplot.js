@@ -175,61 +175,49 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
         },
         addElements : function() {
             var container = this;
-
-            
-           
-            
-            // add the dots to the line
-            // will put more options in here to specify the dots
-            if (container.opts.elements.dot) {
                 
-                // get the dots on the line
-                container.circle = container.chart.selectAll(".dot")
-                    //.data(container.data.filter(function(d) { return d[container.opts.dataStructure.y]; }))
-                    .data(container.data);
+            // get the dots on the line
+            container.circle = container.chart.selectAll(".dot")
+                //.data(container.data.filter(function(d) { return d[container.opts.dataStructure.y]; }))
+                .data(container.data);
 
-                // current circles
-                container.circle
-                    .style("stroke-opacity", 1e-6)
-                    .style("fill-opacity", 1e-6)
-                    .attr("cx", function(d) { return container.xScale(d.x)})
-                    .attr("cy", function(d) { return container.yScale(d.y)})
-                    .transition()
-                  .delay(500)
-                    .duration(500)
-                    .attr("r", container.opts.elements.dotRadius)
-                    .style("fill", container.opts.elements.dot)
-                    .style("stroke", container.opts.elements.line)
-                    .style("stroke-opacity", 1)
-                    .style("fill-opacity", 1);
+            // current circles
+            container.circle
+                .transition()
+                .duration(container.opts.speed)
+                .attr("cx", function(d) { return container.xScale(d.x)})
+                .attr("cy", function(d) { return container.yScale(d.y)})
+                .attr("r", container.opts.elements.dotRadius)
+                .style("fill", container.opts.elements.dot)
+                .style("stroke", container.opts.elements.line)
+                .style("stroke-opacity", 1)
+                .style("fill-opacity", 1);
 
-                // add the new dots
-                container.circle.enter().append("circle")
-                    .attr("class", "dot")
-                    .attr("cx", function(d) { return container.xScale(d.x)})
-                    .attr("cy", function(d) { return container.yScale(d.y)})
-                    .attr("r", container.opts.elements.dotRadius)
-                    .style("fill", container.opts.elements.dot)
-                    .style("stroke", container.opts.elements.line)
-                    .style("stroke-opacity", 1e-6)
-                    .style("fill-opacity", 1e-6)
-                // define the transition of the new circles
-                  .transition()
-                  .delay(500)
-                    .duration(500)
-                    .attr("cx", function(d) { return container.xScale(d.x)})
-                    .attr("cy", function(d) { return container.yScale(d.y)})
-                    .style("stroke-opacity", 1)
-                    .style("fill-opacity", 1);
+            // add the new dots
+            container.circle.enter().append("circle")
+                .attr("class", "dot")
+                .attr("cx", function(d) { return container.xScale(d.x)})
+                .attr("cy", function(d) { return container.yScale(d.y)})
+                .attr("r", container.opts.elements.dotRadius)
+                .style("fill", container.opts.elements.dot)
+                .style("stroke", container.opts.elements.line)
+                .style("stroke-opacity", 1e-6)
+                .style("fill-opacity", 1e-6)
+            // define the transition of the new circles
+              .transition()
+                .duration(container.opts.speed)
+                .attr("cx", function(d) { return container.xScale(d.x)})
+                .attr("cy", function(d) { return container.yScale(d.y)})
+                .style("stroke-opacity", 1)
+                .style("fill-opacity", 1);
 
-                // remove the old ones
-                container.circle.exit()
-                  .transition()
-                    .duration(500)
-                    .style("stroke-opacity", 1e-6)
-                    .style("fill-opacity", 1e-6)
-                    .remove();
-            }  
+            // remove the old ones
+            container.circle.exit()
+              .transition()
+                .duration(container.opts.speed)
+                .style("stroke-opacity", 1e-6)
+                .style("fill-opacity", 1e-6)
+                .remove();
         },
         isScaleNumeric : function(scale) {
             // find out whether the scale is numeric or not
@@ -313,7 +301,7 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
             if (container.opts.scale.y === "linear") {
                 container.yScale
                     .domain([
-                        0,
+                        d3.min(container.data, function(d) { return d[container.opts.dataStructure.y]; }),
                         d3.max(container.data, function(d) { return d[container.opts.dataStructure.y]; })
                     ])
                     // set the range to go from 0 to the height of the chart
@@ -322,7 +310,7 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
             else if (container.opts.scale.y === "ordinal") {
                 container.yScale
                     .domain([
-                        0, 
+                        d3.min(container.data, function(d) { return d[container.opts.dataStructure.y]; }), 
                         d3.max(container.data, function(d) { return d[container.opts.dataStructure.y]; } )])
                     .range([container.height, 0]);
             }
