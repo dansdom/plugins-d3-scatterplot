@@ -18,8 +18,7 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
         this.opts = Extend(true, {}, d3.Scatterplot.settings, options);
         this.init();
         // run the callback function if it is defined
-        if (typeof callback === "function")
-        {
+        if (typeof callback === "function") {
             callback.call();
         }
     };
@@ -33,12 +32,11 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
         'data' : null,  // I'll need to figure out how I want to present data options to the user
         'dataUrl' : null,  // this is a url for a resource
         'dataType' : 'json',
-        'labelPosition' : false,
         'colorRange' : [], // instead of defining a color array, I will set a color scale and then let the user overwrite it
         // maybe only if there is one data set???
         'elements' : {
             'shape' : '#fd8d3c',  // I'll have more than just circles here - set to null if no shape is wanted
-            'line' : 'black',  // the line on the graph - set to null if no line is wanted
+            'line' : '#000000',  // the line on the graph - set to null if no line is wanted
             //'area' : 'white',  // I think if there are multiple areas, then I may use the colorRange
             'dot' : '#fdd0a2', // the dots on the line (I may make this a customisable shape though) - set to null if no dot is wanted
             'dotRadius' : 3.5,  // 0 will show no dots
@@ -62,8 +60,8 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
         'dataStructure' : {
             'x' : 'x1',  // this value may end up being an array so I can support multiple data sets
             'y' : 'y1',
-            'ticksX' : 10,  // tha amount of ticks on the x-axis
-            'ticksY' : 5,  // the amount of ticks on the y-axis
+            'ticksX' : 2,  // tha amount of ticks on the x-axis
+            'ticksY' : 2,  // the amount of ticks on the y-axis
         },
         'scale' : {
             'x' : 'linear',
@@ -95,6 +93,8 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
             container.width = this.opts.width - container.margin.left - container.margin.right;
             container.height = this.opts.height - container.margin.top - container.margin.bottom; 
 
+            console.log(container.data);
+
             // define the scale and axis' for the graph
             this.setScale();
             this.setAxis();
@@ -103,12 +103,10 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
             this.setLayout();
             // set the chart title
             this.setTitle();
-
-            // add the x and y axis to the chart
-            this.addAxis();
             // add the elements to the chart
             this.addElements();
-            
+            // add the x and y axis to the chart
+            this.addAxis();
         },
         setLayout : function() {
             var container = this;
@@ -130,6 +128,8 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
             container.chart
                 .attr("class", "chart")
                 .attr("transform", "translate(" + container.margin.left + "," + container.margin.top + ")");
+
+            console.log('set layout');
         },
         setTitle : function() {
             var container = this;
@@ -256,8 +256,8 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
             container.circle
                 .transition()
                 .duration(container.opts.speed)
-                .attr("cx", function(d) { return container.xScale(d.x)})
-                .attr("cy", function(d) { return container.yScale(d.y)})
+                .attr("cx", function(d) { return container.xScale(d[container.opts.dataStructure.x])})
+                .attr("cy", function(d) { return container.yScale(d[container.opts.dataStructure.y])})
                 .attr("r", container.opts.elements.dotRadius)
                 .style("fill", container.opts.elements.dot)
                 .style("stroke", container.opts.elements.line)
@@ -267,8 +267,8 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
             // add the new dots
             container.circle.enter().append("circle")
                 .attr("class", "dot")
-                .attr("cx", function(d) { return container.xScale(d.x)})
-                .attr("cy", function(d) { return container.yScale(d.y)})
+                .attr("cx", function(d) { return container.xScale(d[container.opts.dataStructure.x])})
+                .attr("cy", function(d) { return container.yScale(d[container.opts.dataStructure.y])})
                 .attr("r", container.opts.elements.dotRadius)
                 .style("fill", container.opts.elements.dot)
                 .style("stroke", container.opts.elements.line)
@@ -277,8 +277,8 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
             // define the transition of the new circles
               .transition()
                 .duration(container.opts.speed)
-                .attr("cx", function(d) { return container.xScale(d.x)})
-                .attr("cy", function(d) { return container.yScale(d.y)})
+                .attr("cx", function(d) { return container.xScale(d[container.opts.dataStructure.x])})
+                .attr("cy", function(d) { return container.yScale(d[container.opts.dataStructure.y])})
                 .style("stroke-opacity", 1)
                 .style("fill-opacity", 1);
 
@@ -343,7 +343,7 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
             var container = this;
 
             // set the X scale
-            container.xScale = d3.scale[container.opts.scale.x]()
+            container.xScale = d3.scale[container.opts.scale.x]();
 
             if (container.opts.scale.x === "linear") {
                 // setting the X scale domain to go from the min value to the max value of the data.x set
@@ -367,8 +367,8 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
 
 
             // if the scale is ordinal then add the rangeBounds - e.g.: .rangeRoundBands([0, width], .1);  (http://bl.ocks.org/3885304)
-            container.yScale = d3.scale[container.opts.scale.y]()
-                // setting the Y scale domain to go from 0 to the max value of the data.y set
+            container.yScale = d3.scale[container.opts.scale.y]();
+            // setting the Y scale domain to go from 0 to the max value of the data.y set
             if (container.opts.scale.y === "linear") {
                 container.yScale
                     .domain([
@@ -382,7 +382,8 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
                 container.yScale
                     .domain([
                         d3.min(container.data, function(d) { return d[container.opts.dataStructure.y]; }), 
-                        d3.max(container.data, function(d) { return d[container.opts.dataStructure.y]; } )])
+                        d3.max(container.data, function(d) { return d[container.opts.dataStructure.y]; })
+                    ])
                     .range([container.height, 0]);
             }
             // hopefully I can fit into one of the two current treatments

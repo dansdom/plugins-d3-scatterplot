@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Pie Chart</title>
+    <title>Scatterplot Chart</title>
     <script type="text/javascript" src="d3.v3.min.js"></script>
     <script type="text/javascript" src="scatterplot.js"></script>
     <link rel="stylesheet" href="style.css" />
@@ -28,23 +28,44 @@
           'dataUrl' : 'data1.csv',
           'dataType' : 'json',
           'dataStructure' : {
-            'x' : 'x',
-            'y' : 'y'
+            'x' : 'x1',
+            'y' : 'y1'
+          },
+          'scale' : {
+            'x' : 'linear',
+            'y' : 'linear'
           },
           'chartName' : 'Scatterplot Chart'
         });
         
         
         function updateChartA() {
-          d3.scatterplot(chart1, {height:300,width:300,outerRadius:50,dataUrl:"data2.csv",'colorRange' : [d3.rgb(200, 10, 60), d3.rgb(70, 10, 190), d3.rgb(10, 20, 30), d3.rgb(40, 10, 60), d3.rgb(70, 10, 190), d3.rgb(10, 10, 60), d3.rgb(240, 150, 160), d3.rgb(40, 150, 260)]});
+          d3.scatterplot(chart1, {height:300,width:600,outerRadius:50,dataUrl:"data2.csv",'scale' : {
+            'x' : 'linear',
+            'y' : 'linear'
+          },'dataStructure' : {
+            'x' : 'x',
+            'y' : 'y'},'colorRange' : [d3.rgb(200, 10, 60), d3.rgb(70, 10, 190), d3.rgb(10, 20, 30), d3.rgb(40, 10, 60), d3.rgb(70, 10, 190), d3.rgb(10, 10, 60), d3.rgb(240, 150, 160), d3.rgb(40, 150, 260)]});
         };
 
         function updateChartB() {
-          d3.scatterplot(chart1, {height:600,width:600,outerRadius:250,dataUrl:"data3.csv"});
+          d3.scatterplot(chart1, {height:600,width:600,outerRadius:250,dataUrl:"data3.csv",'scale' : {
+            'x' : 'ordinal',
+            'y' : 'linear'
+          },'dataStructure' : {
+            'x' : 'letter',
+            'y' : 'value'}
+          });
         };
         
         function updateChartC() {
-          d3.scatterplot(chart1, "updateData", "data4.csv");
+          d3.scatterplot(chart1, {height:600,width:600,outerRadius:250,dataUrl:"data4.csv",'scale' : {
+            'x' : 'ordinal',
+            'y' : 'linear'
+          },'dataStructure' : {
+            'x' : 'letter',
+            'y' : 'value'}
+          });
         };
 
       </script>

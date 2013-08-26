@@ -21,4 +21,14 @@ line.link {
 
 .chartName {transform:translate(-240px, -210px);font-size:20px;font-weight:bold;}
 
-path {stroke:#fff;stroke-width:1px;cursor:pointer;fill:#fff;}
+path {stroke:#000;stroke-width:1px;cursor:pointer;fill:none;}
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.tick {
+  fill:none;
+  stroke:#000;
+}
