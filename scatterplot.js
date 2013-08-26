@@ -2,7 +2,7 @@
 // https://github.com/dansdom/extend
 var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=arguments.length,j=!1,d={hasOwn:Object.prototype.hasOwnProperty,class2type:{},type:function(a){return null==a?String(a):d.class2type[Object.prototype.toString.call(a)]||"object"},isPlainObject:function(a){if(!a||"object"!==d.type(a)||a.nodeType||d.isWindow(a))return!1;try{if(a.constructor&&!d.hasOwn.call(a,"constructor")&&!d.hasOwn.call(a.constructor.prototype,"isPrototypeOf"))return!1}catch(c){return!1}for(var b in a);return void 0===b||d.hasOwn.call(a, b)},isArray:Array.isArray||function(a){return"array"===d.type(a)},isFunction:function(a){return"function"===d.type(a)},isWindow:function(a){return null!=a&&a==a.window}};"boolean"===typeof c&&(j=c,c=arguments[1]||{},f=2);"object"!==typeof c&&!d.isFunction(c)&&(c={});k===f&&(c=this,--f);for(;f<k;f++)if(null!=(h=arguments[f]))for(g in h)b=c[g],e=h[g],c!==e&&(j&&e&&(d.isPlainObject(e)||(i=d.isArray(e)))?(i?(i=!1,b=b&&d.isArray(b)?b:[]):b=b&&d.isPlainObject(b)?b:{},c[g]=Extend(j,b,e)):void 0!==e&&(c[g]= e));return c};
 
-// D3 plugin template
+// D3 Scatterplot Plugin
 (function (d3) {
     // this ones for you 'uncle' Doug!
     'use strict';
@@ -10,9 +10,7 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
     // Plugin namespace definition
     d3.Scatterplot = function (options, element, callback)
     {
-        // wrap the element in the jQuery object
         this.el = element;
-
         // this is the namespace for all bound event handlers in the plugin
         this.namespace = "scatterplot";
         // extend the settings object with the options, make a 'deep' copy of the object using an empty 'holding' object
@@ -44,16 +42,28 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
             //'area' : 'white',  // I think if there are multiple areas, then I may use the colorRange
             'dot' : '#fdd0a2', // the dots on the line (I may make this a customisable shape though) - set to null if no dot is wanted
             'dotRadius' : 3.5,  // 0 will show no dots
-            'x' : true, //  x-axis - set to null if not wanted - leaving the colors for the stylesheet
-            'y' : true //   y-axis - set to null if not wanted - leaving the colors for the stylesheet
+            'xAxis' : {
+                'visible' : true,
+                'tickSize' : 5,
+                'label' : true,
+                'labelOffsetX' : 0,
+                'labelOffsetY' : 40,
+                'labelRotate' : 0
+            },
+            'yAxis' : {
+                'visible' : true,
+                'tickSize' : 10,
+                'label' : true,
+                'labelOffsetX' : -40,
+                'labelOffsetY' : 0,
+                'labelRotate' : -90
+            }
         },
-        'fontSize' : 12,
         'dataStructure' : {
             'x' : 'x1',  // this value may end up being an array so I can support multiple data sets
             'y' : 'y1',
             'ticksX' : 10,  // tha amount of ticks on the x-axis
             'ticksY' : 5,  // the amount of ticks on the y-axis
-            'children' : undefined
         },
         'scale' : {
             'x' : 'linear',
@@ -124,54 +134,115 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
         setTitle : function() {
             var container = this;
 
-            // ####### CHART TITLE #######
             if (container.opts.chartName) {
                 if (!container.chartName) {
                     container.chartName = container.chart.append("g")
                         .attr("class", "chartName")
                         .append("text");
-                        console.log('adding chart name');
+                        //console.log('adding chart name');
                 }
                 container.chartName = container.chart.select(".chartName").select("text")
-                    .text(function() {
-                        var chartTitle;
-                        if (container.opts.dataStructure.children) {
-                            chartTitle = container.dataCategory;
-                            console.log('there is children');
-                        }
-                        else {
-                            chartTitle = container.opts.chartName;
-                            console.log('there is no children');
-                        }
-                        console.log(chartTitle);
-                        return chartTitle;
-                    });
+                    .text(container.opts.chartName);
             }
         },
         addAxis : function() {
-            var container = this;
+            var container = this,
+                elementOpts = container.opts.elements;
 
-            // define the X and Y axis
-            if (!container.X) {
-                container.X = container.chart.append("g")
+            // if we are building an x-axis
+            if (elementOpts.xAxis.visible) {
+                // look to see if it is already defined
+                if (!container.X) {
+                    container.X = container.chart.append("g");   
+                }
+                // style the x-axis
+                container.X
+                    .attr("class", "x-axis")
+                    .attr("transform", "translate(0," + container.height + ")")
+                    .style("shape-rendering", "crispEdges")
+                    .call(container.xAxis);
+                // add the labels
+                container.addXLabels();
             }
-            container.X
-                .attr("class", "x-axis")
-                .attr("transform", "translate(0," + container.height + ")")
-                //.style("fill", "none")  // I'm thinking about using the css file for these class styles. Will sleep on it
-                //.style("stroke", "#000")
-                .style("shape-rendering", "crispEdges")
-                .call(container.xAxis);
+            // else if the x-axis exists then remove it
+            else if (container.X) {
+                container.X.remove();
+                // I have to set this to undefined so that I can test for it again
+                container.X = undefined;
+                containerXLabel = undefined;
+            }
 
-            if (!container.Y) {
-                container.Y = container.chart.append("g")
+            // if we are building a y-axis
+            if (elementOpts.yAxis.visible) {
+                // look to see if it is already defined
+                if (!container.Y) {
+                    container.Y = container.chart.append("g");
+                }
+                container.Y
+                    .attr("class", "y-axis")
+                    .style("shape-rendering", "crispEdges")
+                    .call(container.yAxis);
+                // add the labels
+                container.addYLabels();
             }
-            container.Y
-                .attr("class", "y-axis")
-                //.style("fill", "none")
-                //.style("stroke", "#000")
-                .style("shape-rendering", "crispEdges")
-                .call(container.yAxis);
+            // else if the -axis exists then remove it
+            else if (container.Y) {
+                container.Y.remove();
+                container.Y = undefined;
+                container.YLabel = undefined;
+            }
+        },
+        addXLabels : function() {
+            var container = this,
+                xOpts = container.opts.elements.xAxis;
+
+            if (xOpts.label) {
+                if (!container.XLabel) {
+                    container.XLabel = container.X.append("text");
+                }
+                // add the settings to the label
+                container.XLabel
+                    .attr("dx", function() {
+                        var chartLength = container.width,
+                            labelPosition = (chartLength/2) + xOpts.labelOffsetX;
+                        return labelPosition;
+                    })
+                    .attr("dy", xOpts.labelOffsetY)
+                    .style("shape-rendering", "crispEdges")
+                    .attr("transform", "rotate(" + xOpts.labelRotate + ")")
+                    .text(container.opts.dataStructure.x);
+            }
+            // else remove the label
+            else {
+                container.XLabel.remove();
+                container.XLabel = undefined;
+            }
+        },
+        addYLabels : function() {
+            var container = this,
+                yOpts = container.opts.elements.yAxis;
+
+            if (yOpts.label) {
+                if (!container.YLabel) {
+                    container.YLabel = container.Y.append("text");
+                }
+                container.YLabel
+                    .attr("dy", yOpts.labelOffsetX)
+                    // note, this is tricky because of the rotation it is actually the "dx" value that gives the vertical positon and not the "dy" value
+                    .attr("dx", function() {
+                        var chartHeight = container.height,
+                            labelPosition = (chartHeight/2) + yOpts.labelOffsetY;
+                        return -labelPosition;
+                    })
+                    .style("shape-rendering", "crispEdges")
+                    .attr("transform", "rotate(" + yOpts.labelRotate + ")")
+                    .text(container.opts.dataStructure.y);
+            }
+            // else remove the label
+            else {
+                container.YLabel.remove();
+                container.YLabel = undefined;
+            }
         },
         addElements : function() {
             var container = this;
@@ -319,18 +390,18 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
             }
         },
         setAxis : function() {
-
             var container = this;
             // need to add tick options here
-
-            this.xAxis = d3.svg.axis()
-                .scale(this.xScale)
+            container.xAxis = d3.svg.axis()
+                .scale(container.xScale)
                 .ticks(container.opts.dataStructure.ticksX)
+                .tickSize(container.opts.elements.xAxis.tickSize)
                 .orient("bottom");
 
-            this.yAxis = d3.svg.axis()
-                .scale(this.yScale)
+            container.yAxis = d3.svg.axis()
+                .scale(container.yScale)
                 .ticks(container.opts.dataStructure.ticksY)
+                .tickSize(container.opts.elements.yAxis.tickSize)
                 .orient("left");
         },
         // updates the data set for the chart
@@ -338,7 +409,7 @@ var Extend = Extend || function(){var h,g,b,e,i,c=arguments[0]||{},f=1,k=argumen
         updateData : function(data) {
             var container = this;
 
-            //container.opts.dataUrl = data;
+            container.opts.dataUrl = data;
             this.getData();
         },
         // gets data from a JSON request
